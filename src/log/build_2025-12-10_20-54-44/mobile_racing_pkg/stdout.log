@@ -1,0 +1,22 @@
+running egg_info
+writing ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/PKG-INFO
+writing dependency_links to ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/dependency_links.txt
+writing entry points to ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/entry_points.txt
+writing requirements to ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/requires.txt
+writing top-level names to ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/top_level.txt
+reading manifest file '../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/SOURCES.txt'
+writing manifest file '../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/SOURCES.txt'
+running build
+running build_py
+running install
+running install_lib
+running install_data
+running install_egg_info
+removing '/home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg-0.0.0-py3.8.egg-info' (and everything under it)
+Copying ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg-0.0.0-py3.8.egg-info
+running install_scripts
+Installing kanayama_controller script to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/mobile_racing_pkg
+Installing kanayama_controller_2 script to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/mobile_racing_pkg
+Installing kanayama_controller_3 script to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/mobile_racing_pkg
+Installing kanayama_controller_5 script to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/mobile_racing_pkg
+writing list of installed files to '/home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/install.log'

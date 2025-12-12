@@ -1,0 +1,70 @@
+[0.341s] Invoking command in '/home/zlyoon/ros2_racing/src/mobile_racing_pkg': PYTHONPATH=/home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/mobile_racing_pkg build --build-base /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build install --record /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/install.log --install-scripts $base/lib/mobile_racing_pkg --single-version-externally-managed install_data
+[0.453s] running egg_info
+[0.454s] creating ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info
+[0.454s] writing ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/PKG-INFO
+[0.454s] writing dependency_links to ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/dependency_links.txt
+[0.454s] writing entry points to ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/entry_points.txt
+[0.454s] writing requirements to ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/requires.txt
+[0.454s] writing top-level names to ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/top_level.txt
+[0.461s] writing manifest file '../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/SOURCES.txt'
+[0.481s] reading manifest file '../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/SOURCES.txt'
+[0.482s] writing manifest file '../build/mobile_racing_pkg/mobile_racing_pkg.egg-info/SOURCES.txt'
+[0.482s] running build
+[0.482s] running build_py
+[0.482s] creating /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build
+[0.482s] creating /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib
+[0.482s] creating /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.482s] copying mobile_racing_pkg/kanayama_controller_nodedk.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.484s] copying mobile_racing_pkg/pid_controller_node.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.484s] copying mobile_racing_pkg/kanayama_controller_node4.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.484s] copying mobile_racing_pkg/kanayama_controller_node2.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.485s] copying mobile_racing_pkg/kanayama_controller_node5.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.485s] copying mobile_racing_pkg/__init__.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.485s] copying mobile_racing_pkg/test_odom_publisher.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.485s] copying mobile_racing_pkg/kanayama_controller_node3.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.485s] copying mobile_racing_pkg/kanayama_controller_node.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.485s] copying mobile_racing_pkg/pure_pursuit_controller_node.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.485s] copying mobile_racing_pkg/kanayama_controller_node10.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.486s] copying mobile_racing_pkg/Kanayama_controller_nodedk2.py -> /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg
+[0.486s] running install
+[0.486s] running install_lib
+[0.487s] creating /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.487s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/kanayama_controller_nodedk.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.487s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/pid_controller_node.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/kanayama_controller_node4.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/kanayama_controller_node2.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/kanayama_controller_node5.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/__init__.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/test_odom_publisher.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/kanayama_controller_node3.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/kanayama_controller_node.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/pure_pursuit_controller_node.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/kanayama_controller_node10.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] copying /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build/lib/mobile_racing_pkg/Kanayama_controller_nodedk2.py -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg
+[0.488s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/kanayama_controller_nodedk.py to kanayama_controller_nodedk.cpython-38.pyc
+[0.491s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/pid_controller_node.py to pid_controller_node.cpython-38.pyc
+[0.492s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/kanayama_controller_node4.py to kanayama_controller_node4.cpython-38.pyc
+[0.493s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/kanayama_controller_node2.py to kanayama_controller_node2.cpython-38.pyc
+[0.494s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/kanayama_controller_node5.py to kanayama_controller_node5.cpython-38.pyc
+[0.494s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/__init__.py to __init__.cpython-38.pyc
+[0.494s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/test_odom_publisher.py to test_odom_publisher.cpython-38.pyc
+[0.495s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/kanayama_controller_node3.py to kanayama_controller_node3.cpython-38.pyc
+[0.496s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/kanayama_controller_node.py to kanayama_controller_node.cpython-38.pyc
+[0.496s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/pure_pursuit_controller_node.py to pure_pursuit_controller_node.cpython-38.pyc
+[0.497s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/kanayama_controller_node10.py to kanayama_controller_node10.cpython-38.pyc
+[0.498s] byte-compiling /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg/Kanayama_controller_nodedk2.py to Kanayama_controller_nodedk2.cpython-38.pyc
+[0.500s] running install_data
+[0.500s] creating /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/share/ament_index
+[0.500s] creating /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/share/ament_index/resource_index
+[0.500s] creating /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/share/ament_index/resource_index/packages
+[0.500s] copying resource/mobile_racing_pkg -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/share/ament_index/resource_index/packages
+[0.500s] copying package.xml -> /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/share/mobile_racing_pkg
+[0.500s] running install_egg_info
+[0.501s] Copying ../build/mobile_racing_pkg/mobile_racing_pkg.egg-info to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages/mobile_racing_pkg-0.0.0-py3.8.egg-info
+[0.501s] running install_scripts
+[0.512s] Installing kanayama_controller script to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/mobile_racing_pkg
+[0.513s] Installing kanayama_controller_2 script to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/mobile_racing_pkg
+[0.513s] Installing kanayama_controller_3 script to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/mobile_racing_pkg
+[0.513s] Installing kanayama_controller_5 script to /home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/mobile_racing_pkg
+[0.513s] writing list of installed files to '/home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/install.log'
+[0.527s] Invoked command in '/home/zlyoon/ros2_racing/src/mobile_racing_pkg' returned '0': PYTHONPATH=/home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/zlyoon/ros2_racing/src/install/mobile_racing_pkg/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/mobile_racing_pkg build --build-base /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/build install --record /home/zlyoon/ros2_racing/src/build/mobile_racing_pkg/install.log --install-scripts $base/lib/mobile_racing_pkg --single-version-externally-managed install_data

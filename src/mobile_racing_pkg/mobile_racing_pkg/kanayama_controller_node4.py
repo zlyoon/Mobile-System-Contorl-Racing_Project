@@ -16,19 +16,20 @@ class KanayamaControllerNode(Node):
         super().__init__('kanayama_controller')
 
         # === 파라미터 ===
-        self.declare_parameter('path_csv', 'oooptimized_path_eps015.csv')
-        self.declare_parameter('v_ref', 11.0)    # [m/s] 기준 속도
-        self.declare_parameter('kx', 0.4)
+        self.declare_parameter('path_csv', 'OOOptimized_path_eps015.csv')
+        self.declare_parameter('v_ref', 12.0)        # [m/s] 직선 기준 속도
+        self.declare_parameter('kx', 0.5)
         self.declare_parameter('ky', 0.8)
         self.declare_parameter('kth', 1.8)
 
-        # 추가 : 허용 최대 횡가속도
-        self.declare_parameter('a_lat_max', 6.0)    # [m/s^2]
+        # 허용 최대 횡가속도 (곡률 기반 속도 제한)
+        self.declare_parameter('a_lat_max', 7.0)     # [m/s^2]
 
-        # ===== Lookahead 파라미터 추가 =====
-        # path 포인트 기준으로 몇 개 앞을 볼지
-        self.declare_parameter('lookahead_base', 5)   # 기본 ahead 포인트 수
-        self.declare_parameter('lookahead_gain', 0.3) # 속도 비례 가중치
+        # 최근접점 탐색용 (local search 윈도우, lookahead)
+        self.declare_parameter('search_window', 50)  # 가까운 인덱스 ±몇 개만 검색
+        self.declare_parameter('lookahead', 5)       # 평상시 lookahead index
+        # 곡률이 이 값보다 크면 lookahead 끔 (유턴/급코너)
+        self.declare_parameter('kappa_turn_threshold', 0.25)  # [1/m] 정도에서 튜닝
 
         # 입력/출력 topic
         self.declare_parameter('ego_topic', '/mobile_system_control/ego_vehicle')
@@ -42,8 +43,11 @@ class KanayamaControllerNode(Node):
         self.kth = self.get_parameter('kth').get_parameter_value().double_value
         self.a_lat_max = self.get_parameter('a_lat_max').get_parameter_value().double_value
 
-        self.lookahead_base = self.get_parameter('lookahead_base').get_parameter_value().integer_value
-        self.lookahead_gain = self.get_parameter('lookahead_gain').get_parameter_value().double_value
+        self.search_window = self.get_parameter('search_window').get_parameter_value().integer_value
+        self.lookahead = self.get_parameter('lookahead').get_parameter_value().integer_value
+        self.kappa_turn_threshold = self.get_parameter(
+            'kappa_turn_threshold'
+        ).get_parameter_value().double_value
 
         ego_topic = self.get_parameter('ego_topic').get_parameter_value().string_value
         ctrl_topic = self.get_parameter('ctrl_topic').get_parameter_value().string_value
@@ -58,6 +62,9 @@ class KanayamaControllerNode(Node):
         self.path_yaw = self.compute_heading(self.path_x, self.path_y)
         self.path_kappa = self.compute_curvature(self.path_x, self.path_y)
 
+        # local-search용 현재 인덱스 상태
+        self.current_idx = None
+
         # === Publisher / Subscriber ===
         self.ctrl_pub = self.create_publisher(Vector3Stamped, ctrl_topic, 10)
 
@@ -68,7 +75,10 @@ class KanayamaControllerNode(Node):
             10
         )
 
-        self.get_logger().info('KanayamaControllerNode initialized (lookahead version).')
+        self.get_logger().info(
+            'KanayamaControllerNode initialized '
+            '(local nearest, curvature-based lookahead, curvature-limited v).'
+        )
 
     # --------------------------------------------------------------
     # 경로 heading, curvature 계산
@@ -84,7 +94,7 @@ class KanayamaControllerNode(Node):
         dy = np.gradient(y)
         ddx = np.gradient(dx)
         ddy = np.gradient(dy)
-        kappa = (dx * ddy - dy * ddx) / (np.power(dx*dx + dy*dy, 1.5) + 1e-6)
+        kappa = (dx * ddy - dy * ddx) / (np.power(dx * dx + dy * dy, 1.5) + 1e-6)
         return kappa
 
     # --------------------------------------------------------------
@@ -102,13 +112,18 @@ class KanayamaControllerNode(Node):
         v_meas = float(data[3])
         steer_meas = float(data[4])  # 현재 스티어 값 (사용 안 해도 됨)
 
-        # 1) 경로 위에서 가장 가까운 점 인덱스 찾기
-        idx = self.find_nearest_index(x, y)
+        # 1) 경로 위에서 가장 가까운 점 인덱스 (local search)
+        idx_center = self.find_nearest_index(x, y)
+        kappa_center_abs = abs(self.path_kappa[idx_center])
 
-        # ===== Lookahead 적용 =====
-        # 속도에 비례해 몇 포인트 앞을 참조점으로 사용
-        look = int(self.lookahead_base + self.lookahead_gain * max(v_meas, 0.0))
-        idx_ref = min(idx + look, self.num_points - 1)
+        # --- 곡률 큰 구간에서는 lookahead 끄기 ---
+        if kappa_center_abs > self.kappa_turn_threshold:
+            eff_lookahead = 0
+        else:
+            eff_lookahead = self.lookahead
+
+        # 최종 reference index
+        idx_ref = (idx_center + eff_lookahead) % self.num_points
 
         xr = self.path_x[idx_ref]
         yr = self.path_y[idx_ref]
@@ -116,7 +131,7 @@ class KanayamaControllerNode(Node):
         kappa_r = self.path_kappa[idx_ref]
 
         # ----- 곡률 기반 속도 제한 -----
-        v_ref_max = self.v_ref           # 직선에서의 최대 속도 (15.5 m/s)
+        v_ref_max = self.v_ref           # 직선에서의 최대 속도
         kappa_abs = abs(kappa_r)
 
         if kappa_abs < 1e-6:
@@ -124,32 +139,46 @@ class KanayamaControllerNode(Node):
         else:
             v_kappa_limit = math.sqrt(self.a_lat_max / kappa_abs)
 
+        # 기준 속도: 곡률 기반 제한과 직선 최대 속도 중 작은 값
         v_r = min(v_ref_max, v_kappa_limit)
+
+        # 너무 느려지지 않게 최소 속도 보장 (forward-only)
+        v_min = 3.0   # 필요하면 2.0~4.0 사이에서 튜닝
+        v_r = max(v_r, v_min)
 
         # 기준 yaw rate
         w_r = v_r * kappa_r
 
-        # 2) 경로 좌표계로 오차 계산
-        dx = x - xr
-        dy = y - yr
+        # 2) 오차 계산 (로봇 좌표계 기준)
+        #    dx, dy는 "참조 - 실제"로 잡고, yaw는 현재 차량의 yaw 사용
+        dx = xr - x
+        dy = yr - y
 
-        cos_th = math.cos(thr)
-        sin_th = math.sin(thr)
+        cos_y = math.cos(yaw)
+        sin_y = math.sin(yaw)
 
-        e_x =  cos_th * dx + sin_th * dy
-        e_y = -sin_th * dx + cos_th * dy
-        e_th = self.normalize_angle(yaw - thr)
+        # 로봇(차량) 좌표계에서의 오차
+        e_x =  cos_y * dx + sin_y * dy      # 전/후방 오차
+        e_y = -sin_y * dx + cos_y * dy      # 좌/우 오차
+        e_th = self.normalize_angle(thr - yaw)  # 참조 - 실제
 
         # 3) Kanayama 제어 law
-        v = v_r * math.cos(e_th) + self.kx * e_x
-        w = w_r + v_r * (self.ky * e_y + self.kth * math.sin(e_th))
+        #    v = v_r * cos(e_th) + kx * e_x
+        #    w = w_r + v_r * (ky * e_y + kth * sin(e_th))
+        v_cmd = v_r * math.cos(e_th) + self.kx * e_x
+
+        # forward-only, 속도 제한
+        v_cmd = max(0.0, v_cmd)                 # 역주행 방지
+        v_cmd = max(v_min, min(v_cmd, v_ref_max))
+
+        w_cmd = w_r + v_r * (self.ky * e_y + self.kth * math.sin(e_th))
 
         # 속도/각속도 saturation
-        v = max(min(v, v_ref_max), 0.0)   # [m/s]
-        w = max(min(w, 5.0), -5.0)        # [rad/s]
+        v_cmd = max(min(v_cmd, v_ref_max), 0.0)  # [m/s]
+        w_cmd = max(min(w_cmd, 5.0), -5.0)       # [rad/s]
 
         # 4) (v, w) -> (throttle, steer, brake)
-        throttle, steer_norm, brake = self.vw_to_control(v, v_meas, w)
+        throttle, steer_norm, brake = self.vw_to_control(v_cmd, v_meas, w_cmd)
 
         # 5) 제어 명령 publish (Vector3Stamped)
         now = self.get_clock().now()
@@ -165,11 +194,33 @@ class KanayamaControllerNode(Node):
     # 유틸 함수들
     # --------------------------------------------------------------
     def find_nearest_index(self, x, y):
-        dx = self.path_x - x
-        dy = self.path_y - y
-        dist2 = dx*dx + dy*dy
-        idx = int(np.argmin(dist2))
-        return idx
+        """
+        local search 기반 최근접점 찾기:
+        - 첫 호출: 전체 경로에서 글로벌 최소 거리 인덱스
+        - 이후: current_idx ± search_window 범위에서만 검색
+        """
+        N = self.num_points
+
+        # 최초 한 번은 전체 검색
+        if self.current_idx is None:
+            dx = self.path_x - x
+            dy = self.path_y - y
+            dist2 = dx * dx + dy * dy
+            idx = int(np.argmin(dist2))
+            self.current_idx = idx
+            return idx
+
+        # 이후에는 current_idx 주변에서만 검색
+        w = max(1, int(self.search_window))   # 안전하게 최소 1 이상
+        local_indices = (np.arange(-w, w + 1) + self.current_idx) % N
+
+        dx = self.path_x[local_indices] - x
+        dy = self.path_y[local_indices] - y
+        dist2 = dx * dx + dy * dy
+
+        best_local = int(local_indices[np.argmin(dist2)])
+        self.current_idx = best_local
+        return best_local
 
     def normalize_angle(self, angle):
         while angle > math.pi:
@@ -191,20 +242,13 @@ class KanayamaControllerNode(Node):
         max_steer_rad = math.radians(max_steer_deg)
         wheelbase = 1.023             # [m] 축거
 
-        # --- 속도 제어 (throttle / brake)
+        # --- 속도 제어 (throttle only, brake 사용 X)
         v_error = v_cmd - v_meas
         k_v_throttle = 0.2
-        k_v_brake = 0.3
 
-        if v_error >= 0.0:
-            throttle = k_v_throttle * v_error
-            brake = 0.0
-        else:
-            throttle = 0.0
-            brake = k_v_brake * (-v_error)
-
+        throttle = k_v_throttle * v_error
         throttle = max(0.0, min(1.0, throttle))
-        brake = max(0.0, min(1.0, brake))
+        brake = 0.0
 
         # --- 조향 제어 (w_cmd -> steering angle -> 정규화)
         if abs(v_cmd) < 0.1:
@@ -212,7 +256,6 @@ class KanayamaControllerNode(Node):
         else:
             kappa = w_cmd / v_cmd
 
-        # bicycle model: delta = atan(L * kappa)
         steer_angle = math.atan(wheelbase * kappa)
         steer_angle = max(-max_steer_rad, min(max_steer_rad, steer_angle))
         steer_norm = steer_angle / max_steer_rad

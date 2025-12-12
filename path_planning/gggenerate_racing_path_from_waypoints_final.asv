@@ -1,0 +1,182 @@
+function traj = generate_racing_path_from_waypoints(waypointFile, eps_val, start_pos, goal_pos)
+% generate_racing_path_from_waypoints
+%
+%   waypointFile : centerline csv (waypoints-2.csv)
+%   eps_val      : 0 ~ 1 (0=min curvature, 1=shortest path)
+%   start_pos    : [x,y] start coordinate
+%   goal_pos     : [x,y] goal coordinate
+%
+%   출력:
+%     traj       : [N x 2] racing path (x,y)
+
+    %% -------------------------------------------------------
+    % 0. 입력 기본값
+    %% -------------------------------------------------------
+    if nargin < 1 || isempty(waypointFile)
+        waypointFile = "waypoints-2.csv";
+    end
+    if nargin < 2 || isempty(eps_val)
+        eps_val = 0.15;
+    end
+    if nargin < 3 || isempty(start_pos)
+        start_pos = [-154.6, 18.0];
+    end
+    if nargin < 4 || isempty(goal_pos)
+        goal_pos = [-159.7, 23.0];
+    end
+
+    %% -------------------------------------------------------
+    % 1. Centerline 로드
+    %% -------------------------------------------------------
+    T  = readtable(waypointFile);
+    xc = T.x(:);
+    yc = T.y(:);
+
+    % 필요하면 loop 닫기 (한 점 정도 차이나면 마지막에 시작점 붙여줌)
+    if norm([xc(1)-xc(end), yc(1)-yc(end)]) > 1e-3
+        xc(end+1) = xc(1);
+        yc(end+1) = yc(1);
+    end
+
+    n = numel(xc);
+
+    %% -------------------------------------------------------
+    % 2. 도로 폭 / 유효 폭 모델링
+    %% -------------------------------------------------------
+    road_width    = 7.0;   % 공지 기준 도로 폭 [m]
+    vehicle_width = 1.2;   % 차량 폭 [m]
+    margin        = 1.4;   % 차폭 + 여유 (½쪽 기준 여유가 아님, 아래에서 다시 사용)
+
+    % 센터라인에서 양쪽으로 쓸 수 있는 "usable half-width" 계산
+    % 한쪽 폭 = road_width/2 - (vehicle_width/2 + margin)
+    usable_half = road_width/2 - (vehicle_width/2 + margin);
+
+    if usable_half <= 0
+        error('Margin/vehicle_width가 너무 커서 유효 폭이 0 이하입니다. margin이나 vehicle_width를 줄이세요.');
+    end
+
+    % optimizeSplineRacingPathfinal 에서 쓸 half-width (센터라인 기준, 한쪽)
+    tw = usable_half * ones(n,1);
+
+    % 전체 도로 폭 half (시각화용)
+    full_half = (road_width/2) * ones(n,1);
+
+    %% -------------------------------------------------------
+    % 2-1. 전체 도로 폭 boundary (시각화용)
+    %% -------------------------------------------------------
+    dx = gradient(xc);
+    dy = gradient(yc);
+    dL = hypot(dx,dy) + 1e-6;   % 0 division 방지
+
+    xoff = @(a) -a .* dy ./ dL + xc;
+    yoff = @(a)  a .* dx ./ dL + yc;
+
+    xin_full  = xoff(-full_half);   % 안쪽(좌측) 도로 경계
+    yin_full  = yoff(-full_half);
+    xout_full = xoff(full_half);    % 바깥쪽(우측) 도로 경계
+    yout_full = yoff(full_half);
+
+    %% -------------------------------------------------------
+    % 3. Racing line 최적화 (Spline + QP)
+    %% -------------------------------------------------------
+    % 여기서 optimizeSplineRacingPathfinal은 다음과 같이 가정:
+    %   [traj, xin, yin, xout, yout, i_start, i_goal] = ...
+    %       optimizeSplineRacingPathfinal(xc, yc, tw, eps, start_pos, goal_pos);
+    %
+    %  - xc, yc : centerline
+    %  - tw     : centerline에서 양쪽으로 쓸 수 있는 half-width
+    %  - eps    : 0~1, 0=min curvature, 1=shortest path
+    %  - start_pos, goal_pos : 시작/도착 실제 좌표
+    %
+    [traj, xin, yin, xout, yout, i_start, i_goal] = ...
+        optimizeSplineRacingPathfinal(xc, yc, tw, eps_val, start_pos, goal_pos); %#ok<ASGLU>
+
+    % traj: [N x 2] (x,y)
+
+    %% -------------------------------------------------------
+    % 4. Start / Goal 부근 스무딩
+    %%  - i_start, i_goal에 의존하지 않고
+    %%    traj 맨 앞/맨 뒤 점을 기준으로 선형 보간해서 부드럽게 연결
+    %% -------------------------------------------------------
+    N = size(traj,1);
+    Nsmooth = min(5, floor((N-2)/2));  % 너무 짧을 때를 대비해 방어 코드
+
+    if Nsmooth >= 1
+        % --- Start 부근 ---
+        traj(1,:) = start_pos;  % 첫 점은 무조건 start
+        for k = 1:Nsmooth
+            w = k/(Nsmooth+1);      % 0~1 사이 weight
+            % 기존 traj(1+k,:) 과 start_pos 사이를 보간해서 조금 start 쪽으로 당김
+            traj(1+k,:) = (1-w)*start_pos + w*traj(1+k,:);
+        end
+
+        % --- Goal 부근 ---
+        traj(end,:) = goal_pos; % 마지막 점은 무조건 goal
+        for k = 1:Nsmooth
+            w = k/(Nsmooth+1);
+            traj(end-k,:) = (1-w)*goal_pos + w*traj(end-k,:);
+        end
+    else
+        % 만약 N이 너무 작아서 스무딩이 의미 없으면 그냥 start/goal만 맞춤
+        traj(1,:)   = start_pos;
+        traj(end,:) = goal_pos;
+    end
+
+    %% 4.5 교차 구간은 중앙선으로 강제 덮어쓰기
+    x_cross = -77.8;  % 교차로 중심 x (실제 값으로 변경)
+    y_cross = -9.5;  % 교차로 중심 y
+    r_cross = 15;
+    
+    dist_cross = hypot(xc - x_cross, yc - y_cross);
+    idx_cross  = find(dist_cross < r_cross);
+    
+    if ~isempty(idx_cross)
+        % 그 인덱스 범위를 중앙선으로 바꿈
+        traj(idx_cross,1) = xc(idx_cross);
+        traj(idx_cross,2) = yc(idx_cross);
+    end
+
+
+    %% -------------------------------------------------------
+    % 5. CSV 저장
+    %% -------------------------------------------------------
+    outName = sprintf("oooptimized_path_eps%03d.csv", round(eps_val*100));
+    writematrix(traj, outName);
+    fprintf(">> Saved optimized racing line to %s\n", outName);
+
+    %% -------------------------------------------------------
+    % 6. 시각화 (MAP + boundary + path)
+    %% -------------------------------------------------------
+    figure; hold on; grid on; axis equal;
+    title(sprintf("Racing Map Visualization (eps=%.3f)", eps_val));
+    xlabel("x [m]"); ylabel("y [m]");
+
+    % (1) centerline
+    plot(xc, yc, 'k--', 'LineWidth', 1.0);
+
+    % (2) full road width boundary
+    plot(xin_full,  yin_full,  'Color',[0.6 0.6 0.6], 'LineWidth',1.0);
+    plot(xout_full, yout_full, 'Color',[0.6 0.6 0.6], 'LineWidth',1.0);
+
+    % (3) effective boundary (실제 사용 영역, optimizeSpline 함수에서 나온 것)
+    plot(xin,  yin,  'b:', 'LineWidth',1.4);
+    plot(xout, yout, 'r:', 'LineWidth',1.4);
+
+    % (4) optimized racing line
+    plot(traj(:,1), traj(:,2), 'g', 'LineWidth',2.5);
+
+    % (5) start / goal markers
+    plot(start_pos(1), start_pos(2), 'mo', 'MarkerSize', 8, 'LineWidth',2);
+    text(start_pos(1), start_pos(2), " start", 'Color','m', 'HorizontalAlignment','left');
+
+    plot(goal_pos(1), goal_pos(2), 'co', 'MarkerSize', 8, 'LineWidth',2);
+    text(goal_pos(1), goal_pos(2), " goal", 'Color','c', 'HorizontalAlignment','left');
+
+    legend("centerline", ...
+           "full inner", "full outer", ...
+           "effective inner", "effective outer", ...
+           "optimized racing line", ...
+           "start", "goal", ...
+           'Location','bestoutside');
+
+end
